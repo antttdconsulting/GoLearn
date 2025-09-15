@@ -39,5 +39,3 @@ export function DemoChoose({ onNext }: { onNext?: () => void }) {
     </div>
   )
 }
-
-

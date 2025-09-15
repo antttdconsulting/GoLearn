@@ -63,5 +63,3 @@ export function DemoFillGap({ onNext }: { onNext?: () => void }) {
     </div>
   )
 }
-
-

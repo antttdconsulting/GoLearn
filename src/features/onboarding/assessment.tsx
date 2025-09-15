@@ -160,5 +160,3 @@ export function OnboardingAssessment({ onComplete, onBack }: { onComplete: (resu
     </div>
   )
 }
-
-

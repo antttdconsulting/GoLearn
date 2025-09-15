@@ -2,7 +2,7 @@
 
 ## Cấu trúc thư mục
 
-```
+\`\`\`
 src/
 ├── app/                    # App-level configuration
 │   └── pages/             # Page components
@@ -22,7 +22,7 @@ src/
 ├── assets/               # Static assets
 ├── App.tsx               # Main app component
 └── main.tsx              # App entry point
-```
+\`\`\`
 
 ## Quy tắc đặt tên và tổ chức
 

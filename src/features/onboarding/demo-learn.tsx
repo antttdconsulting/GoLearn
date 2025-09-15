@@ -37,5 +37,3 @@ export function DemoLearn({ onNext }: { onNext?: () => void }) {
     </div>
   )
 }
-
-
