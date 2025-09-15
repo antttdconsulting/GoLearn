@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useMemo, useState } from "react"
 import { OnboardingFlow } from "./features/onboarding/onboarding-flow"
 import { LearningFlow } from "./features/learning/learning-flow"
@@ -11,15 +13,18 @@ type AppState = "landing" | "onboarding" | "dashboard" | "learning" | "profile" 
 
 function App() {
   const [appState, setAppState] = useState<AppState>("landing")
-  const routes = useMemo(() => ({
-    landing: "#/",
-    onboarding: "#/onboarding",
-    dashboard: "#/dashboard",
-    learning: "#/learning",
-    profile: "#/profile",
-    settings: "#/settings",
-    "lesson-detail": "#/lesson/1"
-  }), [])
+  const routes = useMemo(
+    () => ({
+      landing: "#/",
+      onboarding: "#/onboarding",
+      dashboard: "#/dashboard",
+      learning: "#/learning",
+      profile: "#/profile",
+      settings: "#/settings",
+      "lesson-detail": "#/lesson/1",
+    }),
+    [],
+  )
 
   const parseHashToState = (): AppState => {
     const hash = window.location.hash.replace(/^#/, "") || "/"
@@ -33,10 +38,19 @@ function App() {
   }
 
   const navigate = (state: AppState) => {
+    console.log("[v0] Navigating to state:", state)
     setAppState(state)
     const url = routes[state]
+    console.log("[v0] Setting hash to:", url)
     if (url) {
-      window.location.hash = url
+      try {
+        window.location.hash = url
+        console.log("[v0] Hash set successfully to:", window.location.hash)
+      } catch (error) {
+        console.error("[v0] Error setting hash:", error)
+        // Fallback: set hash without the # prefix
+        window.location.hash = url.replace("#", "")
+      }
     }
   }
 
@@ -85,7 +99,14 @@ function App() {
   }
 
   if (appState === "dashboard") {
-    return <Dashboard onGoToProfile={handleGoToProfile} onGoToSettings={handleGoToSettings} onGoToLessonDetail={handleGoToLessonDetail} onLogout={handleLogout} />
+    return (
+      <Dashboard
+        onGoToProfile={handleGoToProfile}
+        onGoToSettings={handleGoToSettings}
+        onGoToLessonDetail={handleGoToLessonDetail}
+        onLogout={handleLogout}
+      />
+    )
   }
 
   if (appState === "profile") {
@@ -100,13 +121,7 @@ function App() {
     return <LessonDetail onBackToDashboard={handleBackToDashboard} />
   }
 
-  return (
-    <LearningFlow 
-      userPreferences={userPreferences}
-      onComplete={handleBackToDashboard}
-      startAt="quiz"
-    />
-  )
+  return <LearningFlow userPreferences={userPreferences} onComplete={handleBackToDashboard} startAt="quiz" />
 }
 
 export default App
