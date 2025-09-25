@@ -24,7 +24,7 @@ const categories = [
   { id: "all", name: "All", count: 0 },
   { id: "greetings", name: "Greetings", count: 0 },
   { id: "courtesy", name: "Courtesy", count: 0 },
-  { id: "questions", name: "Questions", count: 0 },
+  { id: "weather", name: "Weather", count: 0 },
   { id: "family", name: "Family", count: 0 },
   { id: "numbers", name: "Numbers", count: 0 },
   { id: "colors", name: "Colors", count: 0 },
@@ -51,7 +51,7 @@ export function Dictionary({ onBack }: DictionaryProps) {
     const demoEntries: DictionaryEntry[] = [
       { word: 'Xin chào', emoji: '👋', description: 'Lời chào cơ bản', category: 'greetings', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/Chào.mp4' },
       { word: 'Xin lỗi', emoji: '🙏', description: 'Thể hiện sự xin lỗi', category: 'courtesy', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/xin lỗi.mp4' },
-      { word: 'Bạn khỏe không?', emoji: '❓', description: 'Câu hỏi thăm cơ bản', category: 'questions', difficulty: 'medium', isFavorite: false, videoUrl: '/resources/videos/sáng.mp4' },
+      { word: 'Mưa', emoji: '🌧️', description: 'Thời tiết: mưa', category: 'weather', difficulty: 'medium', isFavorite: false, videoUrl: '/resources/videos/mưa phùn.mp4' },
       { word: 'Mẹ', emoji: '👩', description: 'Thành viên gia đình', category: 'family', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/mẹ.mp4' },
       { word: 'Số 1', emoji: '1️⃣', description: 'Số đếm cơ bản', category: 'numbers', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/1.mp4' },
       { word: 'Màu đỏ', emoji: '🟥', description: 'Tên màu', category: 'colors', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/màu đỏ.mp4' },
