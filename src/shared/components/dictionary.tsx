@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import React from "react"
 import { Button } from "../../shared/ui/button"
 import { Card } from "../../shared/ui/card"
 import { Input } from "../../shared/ui/input"
@@ -15,68 +16,19 @@ interface DictionaryEntry {
   category: string
   difficulty: "easy" | "medium" | "hard"
   isFavorite: boolean
+  videoUrl?: string
 }
 
-const dictionaryEntries: DictionaryEntry[] = [
-  // Greetings
-  { word: "Hello", emoji: "👋", description: "Wave your hand", category: "greetings", difficulty: "easy", isFavorite: false },
-  { word: "Goodbye", emoji: "👋", description: "Wave your hand", category: "greetings", difficulty: "easy", isFavorite: false },
-  { word: "Good morning", emoji: "🌅", description: "Sunrise gesture", category: "greetings", difficulty: "easy", isFavorite: false },
-  { word: "Good evening", emoji: "🌙", description: "Moon gesture", category: "greetings", difficulty: "easy", isFavorite: false },
-  { word: "Nice to meet you", emoji: "🤝", description: "Handshake gesture", category: "greetings", difficulty: "medium", isFavorite: false },
-
-  // Courtesy
-  { word: "Please", emoji: "🤲", description: "Open palms together", category: "courtesy", difficulty: "easy", isFavorite: false },
-  { word: "Thank you", emoji: "🙏", description: "Prayer hands gesture", category: "courtesy", difficulty: "easy", isFavorite: false },
-  { word: "You're welcome", emoji: "👌", description: "OK gesture", category: "courtesy", difficulty: "easy", isFavorite: false },
-  { word: "Excuse me", emoji: "🤚", description: "Raised hand", category: "courtesy", difficulty: "medium", isFavorite: false },
-  { word: "Sorry", emoji: "😔", description: "Apologetic gesture", category: "courtesy", difficulty: "easy", isFavorite: false },
-
-  // Questions
-  { word: "What", emoji: "❓", description: "Question mark gesture", category: "questions", difficulty: "easy", isFavorite: false },
-  { word: "Where", emoji: "📍", description: "Pointing gesture", category: "questions", difficulty: "easy", isFavorite: false },
-  { word: "When", emoji: "⏰", description: "Clock gesture", category: "questions", difficulty: "easy", isFavorite: false },
-  { word: "Who", emoji: "👤", description: "Person gesture", category: "questions", difficulty: "easy", isFavorite: false },
-  { word: "How", emoji: "🤔", description: "Thinking gesture", category: "questions", difficulty: "medium", isFavorite: false },
-
-  // Family
-  { word: "Mother", emoji: "👩", description: "Female symbol", category: "family", difficulty: "easy", isFavorite: false },
-  { word: "Father", emoji: "👨", description: "Male symbol", category: "family", difficulty: "easy", isFavorite: false },
-  { word: "Brother", emoji: "👦", description: "Young male symbol", category: "family", difficulty: "easy", isFavorite: false },
-  { word: "Sister", emoji: "👧", description: "Young female symbol", category: "family", difficulty: "easy", isFavorite: false },
-  { word: "Baby", emoji: "👶", description: "Infant symbol", category: "family", difficulty: "easy", isFavorite: false },
-
-  // Numbers
-  { word: "One", emoji: "1️⃣", description: "One finger up", category: "numbers", difficulty: "easy", isFavorite: false },
-  { word: "Two", emoji: "2️⃣", description: "Two fingers up", category: "numbers", difficulty: "easy", isFavorite: false },
-  { word: "Three", emoji: "3️⃣", description: "Three fingers up", category: "numbers", difficulty: "easy", isFavorite: false },
-  { word: "Four", emoji: "4️⃣", description: "Four fingers up", category: "numbers", difficulty: "easy", isFavorite: false },
-  { word: "Five", emoji: "5️⃣", description: "Five fingers up", category: "numbers", difficulty: "easy", isFavorite: false },
-
-  // Colors
-  { word: "Red", emoji: "🔴", description: "Red circle", category: "colors", difficulty: "easy", isFavorite: false },
-  { word: "Blue", emoji: "🔵", description: "Blue circle", category: "colors", difficulty: "easy", isFavorite: false },
-  { word: "Green", emoji: "🟢", description: "Green circle", category: "colors", difficulty: "easy", isFavorite: false },
-  { word: "Yellow", emoji: "🟡", description: "Yellow circle", category: "colors", difficulty: "easy", isFavorite: false },
-  { word: "Black", emoji: "⚫", description: "Black circle", category: "colors", difficulty: "easy", isFavorite: false },
-
-  // Food
-  { word: "Apple", emoji: "🍎", description: "Apple fruit", category: "food", difficulty: "easy", isFavorite: false },
-  { word: "Water", emoji: "💧", description: "Water drop", category: "food", difficulty: "easy", isFavorite: false },
-  { word: "Bread", emoji: "🍞", description: "Bread loaf", category: "food", difficulty: "easy", isFavorite: false },
-  { word: "Milk", emoji: "🥛", description: "Milk glass", category: "food", difficulty: "easy", isFavorite: false },
-  { word: "Coffee", emoji: "☕", description: "Coffee cup", category: "food", difficulty: "easy", isFavorite: false },
-]
-
+// Demo dictionary entries and categories (no API)
 const categories = [
-  { id: "all", name: "All", count: dictionaryEntries.length },
-  { id: "greetings", name: "Greetings", count: dictionaryEntries.filter(e => e.category === "greetings").length },
-  { id: "courtesy", name: "Courtesy", count: dictionaryEntries.filter(e => e.category === "courtesy").length },
-  { id: "questions", name: "Questions", count: dictionaryEntries.filter(e => e.category === "questions").length },
-  { id: "family", name: "Family", count: dictionaryEntries.filter(e => e.category === "family").length },
-  { id: "numbers", name: "Numbers", count: dictionaryEntries.filter(e => e.category === "numbers").length },
-  { id: "colors", name: "Colors", count: dictionaryEntries.filter(e => e.category === "colors").length },
-  { id: "food", name: "Food", count: dictionaryEntries.filter(e => e.category === "food").length },
+  { id: "all", name: "All", count: 0 },
+  { id: "greetings", name: "Greetings", count: 0 },
+  { id: "courtesy", name: "Courtesy", count: 0 },
+  { id: "weather", name: "Weather", count: 0 },
+  { id: "family", name: "Family", count: 0 },
+  { id: "numbers", name: "Numbers", count: 0 },
+  { id: "colors", name: "Colors", count: 0 },
+  { id: "food", name: "Food", count: 0 },
 ]
 
 interface DictionaryProps {
@@ -87,7 +39,34 @@ export function Dictionary({ onBack }: DictionaryProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [favorites, setFavorites] = useState<string[]>([])
-  const [entries] = useState(dictionaryEntries)
+  const [entries, setEntries] = useState<DictionaryEntry[]>([])
+  const [videoPreview, setVideoPreview] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Initialize local demo data
+  React.useEffect(() => {
+    setLoading(true)
+    setError(null)
+    const demoEntries: DictionaryEntry[] = [
+      { word: 'Xin chào', emoji: '👋', description: 'Lời chào cơ bản', category: 'greetings', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/Chào.mp4' },
+      { word: 'Xin lỗi', emoji: '🙏', description: 'Thể hiện sự xin lỗi', category: 'courtesy', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/xin lỗi.mp4' },
+      { word: 'Mưa', emoji: '🌧️', description: 'Thời tiết: mưa', category: 'weather', difficulty: 'medium', isFavorite: false, videoUrl: '/resources/videos/mưa phùn.mp4' },
+      { word: 'Mẹ', emoji: '👩', description: 'Thành viên gia đình', category: 'family', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/mẹ.mp4' },
+      { word: 'Số 1', emoji: '1️⃣', description: 'Số đếm cơ bản', category: 'numbers', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/1.mp4' },
+      { word: 'Màu đỏ', emoji: '🟥', description: 'Tên màu', category: 'colors', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/màu đỏ.mp4' },
+      { word: 'Cơm', emoji: '🍚', description: 'Món ăn', category: 'food', difficulty: 'easy', isFavorite: false, videoUrl: '/resources/videos/cơm.mp4' },
+    ]
+    setEntries(demoEntries)
+    categories.forEach(category => {
+      if (category.id === 'all') {
+        category.count = demoEntries.length
+      } else {
+        category.count = demoEntries.filter(e => e.category === category.id).length
+      }
+    })
+    setLoading(false)
+  }, [])
 
   const filteredEntries = entries.filter(entry => {
     const matchesSearch = entry.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -111,6 +90,61 @@ export function Dictionary({ onBack }: DictionaryProps) {
       case "hard": return "bg-red-100 text-red-800"
       default: return "bg-gray-100 text-gray-800"
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted pb-20">
+        <div className="bg-card border-b p-4">
+          <div className="flex items-center gap-4 max-w-4xl mx-auto">
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Quay lại
+              </Button>
+            )}
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">Từ điển ký hiệu</h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <span className="ml-3 text-gray-600">Đang tải từ điển...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted pb-20">
+        <div className="bg-card border-b p-4">
+          <div className="flex items-center gap-4 max-w-4xl mx-auto">
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Quay lại
+              </Button>
+            )}
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">Từ điển ký hiệu</h1>
+            </div>
+          </div>
+        </div>
+        <div className="text-center py-20">
+          <div className="text-red-500 mb-4">Lỗi tải dữ liệu: {error}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -226,6 +260,7 @@ export function Dictionary({ onBack }: DictionaryProps) {
                     <Button
                       size="sm"
                       className="flex-1 bg-primary/10 hover:bg-primary/20 text-primary"
+                      onClick={() => setVideoPreview(entry.videoUrl || null)}
                     >
                       <Play className="w-4 h-4 mr-1" />
                       Xem
@@ -281,6 +316,23 @@ export function Dictionary({ onBack }: DictionaryProps) {
           </div>
         )}
       </div>
+
+      {/* Video Preview Modal */}
+      {videoPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card rounded-xl shadow-xl w-full max-w-xl border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <div className="font-medium">Xem ký hiệu</div>
+              <Button variant="ghost" size="sm" onClick={() => setVideoPreview(null)}>Đóng</Button>
+            </div>
+            <div className="p-4">
+              <div className="rounded-lg overflow-hidden border">
+                <video className="w-full aspect-video object-contain bg-black" src={videoPreview} playsInline autoPlay loop muted />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

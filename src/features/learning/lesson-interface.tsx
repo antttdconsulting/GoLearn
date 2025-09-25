@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
+import React from "react"
 import { Button } from "../../shared/ui/button"
 import { Card } from "../../shared/ui/card"
 import { Badge } from "../../shared/ui/badge"
@@ -31,39 +32,78 @@ export function LessonInterface({ onNext, onMirrorPractice, onBack }: LessonInte
     }, 2000)
   }
 
-  const vocabulary = useMemo(
-    () => [
-      {
-        id: "w1",
-        term: "Xin chào",
-        translations: { vi: "Xin chào" },
-        variants: [
-          { id: "w1v1", label: "Từ đơn · Một tay", hands: "một tay", type: "từ đơn" },
-          { id: "w1v2", label: "Từ đơn · Hai tay", hands: "hai tay", type: "từ đơn" }
-        ]
-      },
-      {
-        id: "w2",
-        term: "Tạm biệt",
-        translations: { vi: "Tạm biệt" },
-        variants: [
-          { id: "w2v1", label: "Từ ghép · Một tay", hands: "một tay", type: "từ ghép" },
-          { id: "w2v2", label: "Từ ghép · Hai tay", hands: "hai tay", type: "từ ghép" }
-        ]
-      },
-      {
-        id: "w3",
-        term: "Khỏe không",
-        translations: { vi: "Bạn khỏe không?" },
-        variants: [
-          { id: "w3v1", label: "Từ ghép · Một tay", hands: "một tay", type: "từ ghép" }
-        ]
-      }
-    ],
-    []
-  )
+  const [vocabulary, setVocabulary] = useState<any[]>([])
+  const [topicsCovered, setTopicsCovered] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const topicsCovered = ["Chào hỏi", "Giới thiệu", "Hỏi thăm sức khỏe"]
+  // Load lesson data from local demo content
+  React.useEffect(() => {
+    setLoading(true)
+    setError(null)
+    // Minimal demo vocabulary and topics
+    const demoVocabulary = [
+      {
+        id: 'hello',
+        term: 'Xin chào',
+        translations: { vi: 'Xin chào' },
+        variants: [
+          { id: 'v1', label: 'Chuẩn' },
+          { id: 'v2', label: 'Biến thể' },
+        ],
+      },
+      {
+        id: 'thankyou',
+        term: 'Cảm ơn',
+        translations: { vi: 'Cảm ơn' },
+        variants: [
+          { id: 'v1', label: 'Chuẩn' },
+        ],
+      },
+    ]
+    const demoTopics = ['Chào hỏi', 'Lịch sự', 'Từ cơ bản']
+    setVocabulary(demoVocabulary)
+    setTopicsCovered(demoTopics)
+    setLoading(false)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            <p className="text-muted-foreground">Đang tải bài học...</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+              <div className="text-2xl">❌</div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Lỗi tải dữ liệu</h2>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="w-full"
+              >
+                Thử lại
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
@@ -145,7 +185,7 @@ export function LessonInterface({ onNext, onMirrorPractice, onBack }: LessonInte
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Tốc độ</span>
-              <Select value={speed} onValueChange={(v) => setSpeed(v as typeof speed)}>
+              <Select value={speed} onValueChange={(v: "slow" | "medium" | "normal") => setSpeed(v)}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Tốc độ" />
                 </SelectTrigger>
@@ -206,7 +246,7 @@ export function LessonInterface({ onNext, onMirrorPractice, onBack }: LessonInte
                   <div className="text-sm text-muted-foreground">Phiên bản</div>
                   <div className="flex flex-wrap gap-2">
                     {vocabulary
-                      .find((w) => w.id === selectedWordId)?.variants.map((v) => (
+                      .find((w) => w.id === selectedWordId)?.variants.map((v: { id: string; label: string }) => (
                         <Button
                           key={v.id}
                           variant={selectedVariantId === v.id ? "default" : "outline"}
@@ -240,7 +280,7 @@ export function LessonInterface({ onNext, onMirrorPractice, onBack }: LessonInte
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">Tốc độ</span>
-                  <Select value={speed} onValueChange={(v) => setSpeed(v as typeof speed)}>
+                  <Select value={speed} onValueChange={(v: "slow" | "medium" | "normal") => setSpeed(v)}>
                     <SelectTrigger className="w-[140px]">
                       <SelectValue placeholder="Tốc độ" />
                     </SelectTrigger>
@@ -279,12 +319,12 @@ export function LessonInterface({ onNext, onMirrorPractice, onBack }: LessonInte
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Bài học liên quan</h3>
             <div className="grid grid-cols-2 gap-3">
-              {[{ id: "r1", title: "Gia đình" }, { id: "r2", title: "Số đếm 1-20" }].map((r) => (
-                <div key={r.id} className="p-3 rounded-lg border border-border">
-                  <div className="text-sm font-medium">{r.title}</div>
-                  <div className="text-xs text-muted-foreground">Tiếp tục khám phá</div>
+              {/* Related lessons will be loaded from API */}
+              {vocabulary.length === 0 && (
+                <div className="col-span-2 text-center py-4 text-muted-foreground">
+                  Không có bài học liên quan
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

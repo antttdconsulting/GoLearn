@@ -9,12 +9,14 @@ import { cn } from "../../lib/utils";
 import Header from "../../shared/components/Header";
 // Dictionary UI is rendered via shared/components/dictionary
 
-// Mock data for images - you can replace with actual images later
-const lessonGreetings = "https://via.placeholder.com/300x200?text=Greetings";
-const lessonFamily = "https://via.placeholder.com/300x200?text=Family";
-const lessonNumbers = "https://via.placeholder.com/300x200?text=Numbers";
-const lessonEmotions = "https://via.placeholder.com/300x200?text=Emotions";
+// Images will be loaded from API
 
+
+// Demo thumbnails (no API)
+const lessonGreetings = "/placeholder.jpg";
+const lessonFamily = "/placeholder.jpg";
+const lessonNumbers = "/placeholder.jpg";
+const lessonEmotions = "/placeholder.jpg";
 
 // Progress Stats Component
 const ProgressStats = () => {
