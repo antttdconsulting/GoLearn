@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 import { 
   Settings as SettingsIcon, 
   Bell, 
-  Globe, 
   Moon, 
   Volume2, 
   Shield, 

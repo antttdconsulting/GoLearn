@@ -20,7 +20,7 @@ export const preloadVideo = (url: string): Promise<void> => {
   });
 };
 
-export const getVideoFallbackUrl = (originalUrl: string): string => {
+export const getVideoFallbackUrl = (): string => {
   // If video fails to load, we can return a placeholder or default video
   return '/placeholder-video.mp4'; // You can add a default video here
 };
