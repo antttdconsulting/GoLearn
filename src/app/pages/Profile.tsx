@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { Button } from "../../shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Input } from "../../shared/ui/input";
@@ -27,17 +28,75 @@ interface ProfileProps {
 const Profile = ({ onBackToDashboard }: ProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@email.com",
-    joinDate: "15/01/2024",
-    level: 5,
-    xp: 1250,
-    streak: 7,
-    completedLessons: 12,
-    totalLessons: 20
+    name: "",
+    email: "",
+    joinDate: "",
+    level: 0,
+    xp: 0,
+    streak: 0,
+    completedLessons: 0,
+    totalLessons: 0
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize local demo profile (no API)
+  React.useEffect(() => {
+    setLoading(true);
+    setError(null);
+    const demo = {
+      name: "Người dùng Demo",
+      email: "demo@example.com",
+      joinDate: "01/09/2025",
+      level: 3,
+      xp: 450,
+      streak: 5,
+      completedLessons: 12,
+      totalLessons: 50,
+    };
+    setProfile(demo);
+    setLoading(false);
+  }, []);
 
   const [editData, setEditData] = useState(profile);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            <p className="text-muted-foreground">Đang tải thông tin cá nhân...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+              <div className="text-2xl">❌</div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Lỗi tải dữ liệu</h2>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="w-full"
+              >
+                Thử lại
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleEdit = () => {
     setIsEditing(true);

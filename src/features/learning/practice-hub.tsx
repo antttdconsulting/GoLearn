@@ -1,20 +1,18 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import { Button } from "../../shared/ui/button"
 import { Card } from "../../shared/ui/card"
 import { Progress } from "../../shared/ui/progress"
 import { Badge } from "../../shared/ui/badge"
-import { ArrowLeft, Clock, Target, Zap, BookOpen, Play, RotateCcw, Trophy, Star, Timer, Shuffle } from "lucide-react"
+import { ArrowLeft, Clock, Target, Zap, BookOpen, Play, Star, Timer, Shuffle } from "lucide-react"
 import { BottomNavigation } from "../../shared/components/bottom-navigation"
 
 interface PracticeMode {
   id: string
   title: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
   difficulty: "easy" | "medium" | "hard"
   duration: string
   type: "flashcards" | "quiz" | "timed" | "review"
@@ -28,77 +26,38 @@ interface PracticeHubProps {
 
 export function PracticeHub({ onBack, onStartPractice, onNavigate }: PracticeHubProps) {
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [practiceStats] = useState({
-    totalPracticeTime: 45,
-    signsReviewed: 23,
-    accuracy: 87,
-    streak: 5,
+  const [practiceStats, setPracticeStats] = useState({
+    totalPracticeTime: 0,
+    signsReviewed: 0,
+    accuracy: 0,
+    streak: 0,
   })
+  const [practiceModes, setPracticeModes] = useState<PracticeMode[]>([])
 
-  const practiceModes: PracticeMode[] = [
-    {
-      id: "flashcards",
-      title: "Flashcards",
-      description: "Review signs at your own pace with interactive flashcards",
-      icon: <BookOpen className="w-6 h-6" />,
-      difficulty: "easy",
-      duration: "5-15 min",
-      type: "flashcards",
-    },
-    {
-      id: "quick-quiz",
-      title: "Quick Quiz",
-      description: "Test your knowledge with a short quiz",
-      icon: <Zap className="w-6 h-6" />,
-      difficulty: "medium",
-      duration: "3-5 min",
-      type: "quiz",
-    },
-    {
-      id: "timed-challenge",
-      title: "Timed Challenge",
-      description: "Race against the clock to identify signs",
-      icon: <Timer className="w-6 h-6" />,
-      difficulty: "hard",
-      duration: "2 min",
-      type: "timed",
-    },
-    {
-      id: "review-mistakes",
-      title: "Review Mistakes",
-      description: "Practice signs you've gotten wrong before",
-      icon: <RotateCcw className="w-6 h-6" />,
-      difficulty: "medium",
-      duration: "5-10 min",
-      type: "review",
-    },
-    {
-      id: "random-practice",
-      title: "Random Practice",
-      description: "Mixed practice with random signs from all categories",
-      icon: <Shuffle className="w-6 h-6" />,
-      difficulty: "medium",
-      duration: "10-20 min",
-      type: "quiz",
-    },
-    {
-      id: "mastery-test",
-      title: "Mastery Test",
-      description: "Comprehensive test of all learned signs",
-      icon: <Trophy className="w-6 h-6" />,
-      difficulty: "hard",
-      duration: "15-25 min",
-      type: "quiz",
-    },
-  ]
+  // Load practice data from local demo content
+  useEffect(() => {
+    setPracticeStats({
+      totalPracticeTime: 8,
+      signsReviewed: 24,
+      accuracy: 78,
+      streak: 2,
+    })
+    const demoModes: PracticeMode[] = [
+      { id: 'flashcards-quick', title: 'Flashcards nhanh', description: 'Ôn nhanh 10 ký hiệu', icon: <Zap className="w-5 h-5" />, difficulty: 'easy', duration: '3-5m', type: 'flashcards' },
+      { id: 'quiz-basic', title: 'Quiz cơ bản', description: '10 câu hỏi trắc nghiệm', icon: <Target className="w-5 h-5" />, difficulty: 'medium', duration: '5-8m', type: 'quiz' },
+      { id: 'timed-30', title: 'Thử thách 30s', description: 'Trả lời thật nhanh!', icon: <Timer className="w-5 h-5" />, difficulty: 'hard', duration: '0.5m', type: 'timed' },
+      { id: 'review-random', title: 'Ôn ngẫu nhiên', description: 'Tổng hợp nhiều chủ đề', icon: <Shuffle className="w-5 h-5" />, difficulty: 'medium', duration: '5-10m', type: 'review' },
+    ]
+    setPracticeModes(demoModes)
+  }, [])
 
-  const categories = [
+  const [categories] = useState([
     { id: "all", name: "All Categories" },
     { id: "greetings", name: "Greetings" },
     { id: "courtesy", name: "Courtesy" },
     { id: "questions", name: "Questions" },
     { id: "family", name: "Family" },
-  ]
+  ])
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

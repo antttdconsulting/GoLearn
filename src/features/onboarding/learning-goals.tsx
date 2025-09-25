@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../../shared/ui/button"
-import { Card } from "../../shared/ui/card"
-import { ChevronRight, Check } from "lucide-react"
+import React from "react"
+import { Check } from "lucide-react"
+import { OnboardingLayout } from "./onboarding-layout"
 import { cn } from "../../lib/utils"
 
 interface LearningGoal {
@@ -12,11 +12,12 @@ interface LearningGoal {
   duration: string
 }
 
+// Demo learning goals (no API)
 const goals: LearningGoal[] = [
-  { id: "5min", label: "5 min", duration: "5 minutes" },
-  { id: "10min", label: "10 min", duration: "10 minutes" },
-  { id: "15min", label: "15 min", duration: "15 minutes" },
-  { id: "20min", label: "20 min", duration: "20 minutes" },
+  { id: '5m', label: '5m', duration: '5 phút mỗi ngày' },
+  { id: '10m', label: '10m', duration: '10 phút mỗi ngày' },
+  { id: '15m', label: '15m', duration: '15 phút mỗi ngày' },
+  { id: '20m', label: '20m', duration: '20 phút mỗi ngày' },
 ]
 
 interface LearningGoalsProps {
@@ -25,81 +26,113 @@ interface LearningGoalsProps {
 }
 
 export function LearningGoals({ onNext, onBack: _onBack }: LearningGoalsProps) {
-  const [selectedGoal, setSelectedGoal] = useState<string>("10min")
+  const [selectedGoal, setSelectedGoal] = useState<string>("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Initialize local demo data
+  React.useEffect(() => {
+    setLoading(false)
+    setError(null)
+    if (goals.length > 0) {
+      setSelectedGoal(goals[0].id)
+    }
+  }, [])
 
   const handleNext = () => {
     onNext(selectedGoal)
   }
 
+  if (loading) {
+    return (
+      <OnboardingLayout
+        progress={{ current: 2, total: 6 }}
+        title="Mục tiêu học mỗi ngày của bạn là gì?"
+        onNext={handleNext}
+        onBack={_onBack}
+      >
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <span className="ml-3 text-gray-600">Đang tải...</span>
+        </div>
+      </OnboardingLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <OnboardingLayout
+        progress={{ current: 2, total: 6 }}
+        title="Mục tiêu học mỗi ngày của bạn là gì?"
+        onNext={handleNext}
+        onBack={_onBack}
+      >
+        <div className="text-center py-8">
+          <div className="text-red-500 mb-4">Lỗi tải dữ liệu: {error}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Thử lại
+          </button>
+        </div>
+      </OnboardingLayout>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
-        <div className="p-6 pb-24 space-y-8">
-          {/* Progress Indicator */}
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">2/6</div>
-            <div className="flex space-x-1">
-              <div className="w-8 h-1 bg-primary rounded-full"></div>
-              <div className="w-8 h-1 bg-primary rounded-full"></div>
-              <div className="w-8 h-1 bg-border rounded-full"></div>
-              <div className="w-8 h-1 bg-border rounded-full"></div>
-              <div className="w-8 h-1 bg-border rounded-full"></div>
-              <div className="w-8 h-1 bg-border rounded-full"></div>
+    <OnboardingLayout
+      progress={{ current: 2, total: 6 }}
+      title="Mục tiêu học mỗi ngày của bạn là gì?"
+      onNext={handleNext}
+      onBack={_onBack}
+    >
+      {/* Goal Options */}
+      <div className="space-y-3">
+        {goals.map((goal) => (
+          <button
+            key={goal.id}
+            onClick={() => setSelectedGoal(goal.id)}
+            className={cn(
+              "w-full p-4 rounded-2xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+              "flex items-center justify-between text-left truncate",
+              selectedGoal === goal.id
+                ? "border-blue-500 bg-blue-50 shadow-lg"
+                : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-md",
+            )}
+          >
+            <div className="flex items-center space-x-4">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
+                selectedGoal === goal.id 
+                  ? "bg-blue-100" 
+                  : "bg-gray-100"
+              )}>
+                <span className={cn(
+                  "text-lg font-bold",
+                  selectedGoal === goal.id 
+                    ? "text-blue-600" 
+                    : "text-gray-600"
+                )}>{goal.label}</span>
+              </div>
+              <div className="min-w-0">
+                <div className={cn(
+                  "font-semibold text-base",
+                  selectedGoal === goal.id 
+                    ? "text-gray-800" 
+                    : "text-gray-700"
+                )}>{goal.duration}</div>
+                <div className="text-sm text-gray-500">Luyện tập hằng ngày</div>
+              </div>
             </div>
-          </div>
-
-          {/* Question */}
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground text-balance leading-tight">
-              Mục tiêu học mỗi ngày của bạn là gì?
-            </h1>
-          </div>
-
-          {/* Goal Options */}
-          <div className="space-y-3">
-            {goals.map((goal) => (
-              <button
-                key={goal.id}
-                onClick={() => setSelectedGoal(goal.id)}
-                className={cn(
-                  "w-full p-4 rounded-xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
-                  "flex items-center justify-between text-left",
-                  selectedGoal === goal.id
-                    ? "border-primary bg-primary/5 shadow-md"
-                    : "border-border bg-background hover:border-primary/50",
-                )}
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                    <span className="text-lg font-semibold text-accent">{goal.label}</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-foreground">{goal.duration}</div>
-                    <div className="text-sm text-muted-foreground">Luyện tập hằng ngày</div>
-                  </div>
-                </div>
-                {selectedGoal === goal.id && (
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-        </div>
-        <div className="sticky bottom-0 inset-x-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50">
-          <div className="flex gap-3">
-            <Button variant="outline" className="w-1/3" disabled>
-              Quay lại
-            </Button>
-            <Button onClick={handleNext} className="flex-1">
-              Tiếp tục
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
+            {selectedGoal === goal.id && (
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Check className="w-4 h-4 text-white" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </OnboardingLayout>
   )
 }

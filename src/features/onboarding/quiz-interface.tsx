@@ -7,7 +7,7 @@ import { Progress } from "../../shared/ui/progress"
 import { Badge } from "../../shared/ui/badge"
 import { ChevronRight, Check, X, ArrowLeft, RotateCcw, Trophy, Star, Clock, Camera } from "lucide-react"
 import { cn } from "../../lib/utils"
-import { QuizQuestion, getRandomQuestions } from "../../lib/quizData"
+import { QuizQuestion, fetchQuizQuestions } from "../../lib/quizData"
 
 interface QuizInterfaceProps {
   onNext: () => void
@@ -29,15 +29,37 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
   const [quizCompleted, setQuizCompleted] = useState(false)
   const [playbackRate, setPlaybackRate] = useState<0.5 | 1 | 1.25>(1)
   const [showMirror, setShowMirror] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const mirrorVideoRef = useRef<HTMLVideoElement | null>(null)
   const mirrorStreamRef = useRef<MediaStream | null>(null)
 
   const currentQuestion = questions[currentQuestionIndex]
 
+  const getGenericPrompt = () => {
+    if (!currentQuestion) return ''
+    // Only adjust for single-video types; keep specialized UI for comparisons
+    if (currentQuestion.type === 'video-comparison') return currentQuestion.question
+    if ((currentQuestion as any).category === 'numbers') return 'Ký hiệu trên biểu thị số mấy?'
+    return 'Ký hiệu trên có ý nghĩa gì?'
+  }
+
   useEffect(() => {
-    const quizQuestions = getRandomQuestions(categoryId, questionCount)
-    setQuestions(quizQuestions)
+    const loadQuizQuestions = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const quizQuestions = await fetchQuizQuestions(categoryId, questionCount)
+        setQuestions(quizQuestions)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load quiz questions')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadQuizQuestions()
   }, [categoryId, questionCount])
 
   useEffect(() => {
@@ -88,9 +110,18 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
     if (showResult) return
 
     setSelectedAnswer(answer)
-    const correct = Array.isArray(currentQuestion.correctAnswer) 
-      ? currentQuestion.correctAnswer.includes(answer)
-      : currentQuestion.correctAnswer === answer
+    let correct = false
+    
+    if (typeof currentQuestion.correctAnswer === 'boolean') {
+      // For true/false questions
+      correct = (answer === 'true') === currentQuestion.correctAnswer
+    } else if (Array.isArray(currentQuestion.correctAnswer)) {
+      // For multiple correct answers
+      correct = currentQuestion.correctAnswer.includes(answer)
+    } else {
+      // For single correct answer
+      correct = currentQuestion.correctAnswer === answer
+    }
     
     setIsCorrect(correct)
     setShowResult(true)
@@ -189,27 +220,30 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
       case 'true-false':
         return (
           <div className="grid grid-cols-2 gap-4">
-            {['true', 'false'].map((option) => (
+            {[
+              { value: 'true', label: 'Đúng', icon: '✅' },
+              { value: 'false', label: 'Sai', icon: '❌' }
+            ].map((option) => (
               <button
-                key={option}
-                onClick={() => handleAnswerSelect(option)}
+                key={option.value}
+                onClick={() => handleAnswerSelect(option.value)}
                 disabled={showResult}
                 className={cn(
                   "p-6 rounded-xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
                   "flex flex-col items-center justify-center text-center",
                   !showResult && "hover:border-primary/50",
-                  selectedAnswer === option && showResult
+                  selectedAnswer === option.value && showResult
                     ? isCorrect
                       ? "border-green-500 bg-green-50"
                       : "border-red-500 bg-red-50"
-                    : selectedAnswer === option
+                    : selectedAnswer === option.value
                       ? "border-primary bg-primary/5"
                       : "border-border bg-background",
                   showResult && "cursor-not-allowed",
                 )}
               >
-                <div className="text-2xl mb-2">{option === 'true' ? '✅' : '❌'}</div>
-                <div className="font-semibold text-foreground capitalize">{option}</div>
+                <div className="text-2xl mb-2">{option.icon}</div>
+                <div className="font-semibold text-foreground">{option.label}</div>
               </button>
             ))}
           </div>
@@ -268,6 +302,104 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
                 <div className="font-semibold text-foreground">{option}</div>
               </button>
             ))}
+          </div>
+        )
+
+      case 'video-comparison':
+        return (
+          <div className="space-y-4">
+            {/* Two videos side by side */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="text-center font-semibold text-sm">Video A</div>
+                <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                  <video
+                    className="w-full h-full object-contain"
+                    src={currentQuestion.signVideo}
+                    playsInline
+                    autoPlay
+                    loop
+                    muted
+                    onError={(e) => {
+                      console.error('Video A load error:', currentQuestion.signVideo);
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <div className="absolute inset-0 hidden items-center justify-center bg-gray-100 text-gray-500">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📹</div>
+                      <div className="text-sm">Video A không thể tải</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-center font-semibold text-sm">Video B</div>
+                <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                  <video
+                    className="w-full h-full object-contain"
+                    src={currentQuestion.signVideo2}
+                    playsInline
+                    autoPlay
+                    loop
+                    muted
+                    onError={(e) => {
+                      console.error('Video B load error:', currentQuestion.signVideo2);
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <div className="absolute inset-0 hidden items-center justify-center bg-gray-100 text-gray-500">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📹</div>
+                      <div className="text-sm">Video B không thể tải</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Answer options */}
+            <div className="space-y-3">
+              {currentQuestion.options?.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(option)}
+                  disabled={showResult}
+                  className={cn(
+                    "w-full p-4 rounded-xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
+                    "flex items-center justify-between text-left",
+                    !showResult && "hover:border-primary/50",
+                    selectedAnswer === option && showResult
+                      ? isCorrect
+                        ? "border-green-500 bg-green-50"
+                        : "border-red-500 bg-red-50"
+                      : selectedAnswer === option
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-background",
+                    showResult && "cursor-not-allowed",
+                  )}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                      <span className="font-semibold text-accent">{String.fromCharCode(65 + index)}</span>
+                    </div>
+                    <div className="font-semibold text-foreground">{option}</div>
+                  </div>
+                  {showResult && selectedAnswer === option && (
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center",
+                      isCorrect ? "bg-green-500" : "bg-red-500",
+                    )}>
+                      {isCorrect ? <Check className="w-4 h-4 text-white" /> : <X className="w-4 h-4 text-white" />}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         )
 
@@ -356,7 +488,7 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
     )
   }
 
-  if (!currentQuestion) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
@@ -369,7 +501,55 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
     )
   }
 
-  const defaultSignVideo = "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-red-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Lỗi tải dữ liệu</h2>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="w-full"
+              >
+                Thử lại
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!currentQuestion || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+          <div className="p-8 text-center space-y-8">
+            <div className="w-16 h-16 mx-auto bg-yellow-100 rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-yellow-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Không có câu hỏi</h2>
+              <p className="text-muted-foreground mb-4">Không tìm thấy câu hỏi phù hợp</p>
+              {onBack && (
+                <Button onClick={onBack} variant="outline" className="w-full">
+                  Quay lại
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  const defaultSignVideo = "/resources/videos/Chào.mp4"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted flex items-center justify-center p-4">
@@ -416,45 +596,71 @@ export function QuizInterface({ onNext, onBack, categoryId, questionCount = 10, 
             </div>
           </div>
 
-          {/* Video preview with overlay controls */}
-          <div className="relative rounded-2xl overflow-hidden border bg-muted/20">
-            <video
-              ref={videoRef}
-              className="w-full aspect-video object-contain bg-black"
-              src={currentQuestion.signVideo || defaultSignVideo}
-              playsInline
-              autoPlay
-              loop
-              muted
-            />
-            <div className="absolute top-2 right-2 flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setPlaybackRate((r) => (r === 1 ? 0.5 : r === 0.5 ? 1.25 : 1))}
-                className="bg-black/50 text-white hover:bg-black/70"
-                aria-label="Change video speed"
-              >
-                <span className="text-xs font-semibold">{playbackRate}x</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowMirror(true)}
-                className="bg-black/50 text-white hover:bg-black/70"
-                aria-label="Open sign mirror"
-              >
-                <Camera className="w-5 h-5" />
-              </Button>
+          {/* Title / Prompt */}
+          {currentQuestion.type !== 'video-comparison' && (
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-foreground text-balance leading-tight mb-4">
+                {getGenericPrompt()}
+              </h1>
             </div>
-          </div>
+          )}
 
-          {/* Question */}
-          <div className="text-center">
-            <h1 className="text-xl font-bold text-foreground text-balance leading-tight mb-6 mt-4">
-              {currentQuestion.question}
-            </h1>
-          </div>
+          {/* Video preview with overlay controls - only show for non-video-comparison types */}
+          {currentQuestion.type !== 'video-comparison' && (
+            <div className="relative rounded-2xl overflow-hidden border bg-muted/20">
+              <video
+                ref={videoRef}
+                className="w-full aspect-video object-contain bg-black"
+                src={currentQuestion.signVideo || defaultSignVideo}
+                playsInline
+                autoPlay
+                loop
+                muted
+                onError={(e) => {
+                  console.error('Main video load error:', currentQuestion.signVideo);
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <div className="absolute inset-0 hidden items-center justify-center bg-gray-100 text-gray-500">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">📹</div>
+                  <div className="text-sm">Video không thể tải</div>
+                  <div className="text-xs mt-1">Câu hỏi: {currentQuestion.question}</div>
+                </div>
+              </div>
+              <div className="absolute top-2 right-2 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setPlaybackRate((r) => (r === 1 ? 0.5 : r === 0.5 ? 1.25 : 1))}
+                  className="bg-black/50 text-white hover:bg-black/70"
+                  aria-label="Change video speed"
+                >
+                  <span className="text-xs font-semibold">{playbackRate}x</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowMirror(true)}
+                  className="bg-black/50 text-white hover:bg-black/70"
+                  aria-label="Open sign mirror"
+                >
+                  <Camera className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Keep question text only for non-single-video types, or as supplementary below options if needed */}
+          {currentQuestion.type === 'video-comparison' && (
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-foreground text-balance leading-tight mb-6 mt-4">
+                {currentQuestion.question}
+              </h1>
+            </div>
+          )}
 
           {/* Mirror modal */}
           {showMirror && (

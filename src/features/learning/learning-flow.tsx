@@ -51,7 +51,6 @@ export function LearningFlow({ userPreferences, onComplete, startAt = "dashboard
   const [quizResults, setQuizResults] = useState<{
     score: number
     totalQuestions: number
-    category?: string
   } | null>(null)
   const [showCelebration, setShowCelebration] = useState(false)
 
@@ -75,8 +74,8 @@ export function LearningFlow({ userPreferences, onComplete, startAt = "dashboard
     setCurrentStep("quiz")
   }
 
-  const handleQuizComplete = (score: number, totalQuestions: number, category?: string) => {
-    setQuizResults({ score, totalQuestions, category })
+  const handleQuizComplete = (score: number, totalQuestions: number) => {
+    setQuizResults({ score, totalQuestions })
     setCurrentStep("results")
     
     // Update progress
