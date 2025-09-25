@@ -13,10 +13,10 @@ import Header from "../../shared/components/Header";
 
 
 // Demo thumbnails (no API)
-const lessonGreetings = "/placeholder.jpg";
-const lessonFamily = "/placeholder.jpg";
-const lessonNumbers = "/placeholder.jpg";
-const lessonEmotions = "/placeholder.jpg";
+const lessonGreetings = "/images/lesson-emotions-CLtOmn_z.jpg.jpg";
+const lessonFamily = "/images/lesson-family-Be3SmyDt.jpg";
+const lessonNumbers = "/images/lesson-numbers-DJNsYzix.jpg";
+const lessonEmotions = "/images/lesson-emotions-CLtOmn_z.jpg";
 
 // Progress Stats Component
 const ProgressStats = () => {
